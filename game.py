@@ -3,6 +3,8 @@ from spaceship import Spaceship
 from obstacle import Obstacle, grid
 from Graphics.alien import Alien
 from laser import Laser
+from Graphics.alien import MysteryShip
+
 class Game:
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
@@ -15,7 +17,8 @@ class Game:
         self.aliens_group = pygame.sprite.Group()
         self.create_aliens()
         self.aliens_direction = 1
-        self.alien_lasers_group = pygame.sprite.Group()
+        self.alien_lasers_group = pygame.sprite.Group() 
+        self.mystery_ship_group = pygame.sprite.GroupSingle()
 
     def create_obstacles(self):
         # Calculate the total space used by all obstacles plus the gaps
@@ -68,3 +71,6 @@ class Game:
             random_alien = random.choice(self.aliens_group.sprites())
             laser_sprite = Laser(random_alien.rect.center, -6, self.screen_height)
             self.alien_lasers_group.add(laser_sprite)
+
+    def create_mystery_ship(self):
+        self.mystery_ship_group.add(MysteryShip(self.screen_width))
