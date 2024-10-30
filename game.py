@@ -23,6 +23,8 @@ class Game:
         self.aliens_group = pygame.sprite.Group()
         self.create_aliens()
         
+        self.lasers_group = pygame.sprite.Group()
+
         # Set aliens movement direction
         self.aliens_direction = 1
         self.alien_lasers_group = pygame.sprite.Group()
@@ -32,13 +34,21 @@ class Game:
         self.lives = 3
         self.run = True
         self.score = 0
-        self.highscores = {1: 0, 2: 0}
+        self.highscores = {1: 0, 2: 0, 3: 0}
         self.load_highscore()
         
         # Sounds
         self.explosion_sound = pygame.mixer.Sound("Sounds/explosion.ogg")
         pygame.mixer.music.load("Sounds/music.ogg")
         pygame.mixer.music.play(-1)
+
+    def set_sound_volume(self, volume):
+        """Điều chỉnh âm lượng hiệu ứng âm thanh."""
+        self.explosion_sound.set_volume(volume)  
+
+    def set_music_volume(self, volume):
+        """Điều chỉnh âm lượng nhạc nền."""
+        pygame.mixer.music.set_volume(volume)
 
     def create_obstacles(self):
         total_obstacles_width = self.num_obstacles * self.obstacle_width
@@ -66,14 +76,16 @@ class Game:
                         alien_type = 2
                     else:
                         alien_type = 1
-                else: 
+                elif self.level == 2:
+                    alien_type = 1
+                elif self.level == 3:
                     alien_type = 1  
 
                 alien = Alien(alien_type, x + self.offset / 2, y)
                 self.aliens_group.add(alien)
 
     def move_aliens(self):
-        if self.level == 1:
+        if self.level == 1 or self.level == 3:
             self.aliens_group.update(self.aliens_direction)
             alien_sprites = self.aliens_group.sprites()
             for alien in alien_sprites:
@@ -105,9 +117,12 @@ class Game:
         if self.level == 1:
             if self.aliens_group.sprites():
                 random_alien = random.choice(self.aliens_group.sprites())
-                laser_sprite = Laser(random_alien.rect.center, -6, self.screen_height)
+                laser_sprite = Laser(random_alien.rect.center, -6, self.screen_height, color=(255, 0, 0))
                 self.alien_lasers_group.add(laser_sprite)
-        else:
+
+        elif self.level == 2:
+            self.alien_shoot_laser_level_2()
+        elif self.level == 3: 
             self.alien_shoot_laser_level_2() 
 
     def alien_shoot_laser_level_2(self):
@@ -116,10 +131,9 @@ class Game:
             laser_sprite_center = (random_alien.rect.centerx, random_alien.rect.bottom)
         
             # Bắn 3 viên laser theo dạng quạt
-            lasers = Laser.create_quadrant_laser(laser_sprite_center, -6, self.screen_height)
+            lasers = Laser.create_quadrant_laser(laser_sprite_center, -6, self.screen_height, color=(255, 0, 0)) 
             for laser in lasers:
                 self.alien_lasers_group.add(laser)
-
 
     def alien_move_down(self, distance):
         for alien in self.aliens_group:
@@ -127,7 +141,8 @@ class Game:
 
     def create_mystery_ship(self):
         self.mystery_ship_group.add(MysteryShip(self.screen_width, self.offset))
-
+    
+    
     def check_for_collisions(self):
         # Check collisions with spaceship lasers
         if self.spaceship_group.sprite.lasers_group:
@@ -138,6 +153,9 @@ class Game:
                     for alien in aliens_hit:
                         self.score += alien.type * 100
                         self.check_for_highscore()
+                        if self.level == 3:
+                            laser_sprites = Laser.create_eight_direction_lasers(alien.rect.center, -6, self.screen_height, color=(255, 0, 0))
+                            self.alien_lasers_group.add(*laser_sprites)
                         laser_sprite.kill()
 
                 if pygame.sprite.spritecollide(laser_sprite, self.mystery_ship_group, True):

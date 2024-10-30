@@ -18,6 +18,10 @@ class Spaceship(pygame.sprite.Sprite):
         self.laser_delay = 300
         self.laser_sound = pygame.mixer.Sound("Sounds/laser.ogg")
 
+    def set_laser_volume(self, volume):
+        """Điều chỉnh âm lượng âm thanh của laser."""
+        self.laser_sound.set_volume(volume)
+        
     def get_user_input(self):
         keys = pygame.key.get_pressed()
 
