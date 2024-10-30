@@ -56,6 +56,8 @@ level_selection_active = False
 paused = False 
 name_input_active = False
 settings_active = False
+victory = False
+victory_start_time = None
 
 # Tải background cho menu và game
 menu_background = pygame.image.load("background.jpg").convert()
@@ -177,7 +179,7 @@ while True:
                     level_selection_active = False 
                 elif 300 <= mouse_pos[0] <= 450 and 500 <= mouse_pos[1] <= 570: 
                     game.level = 3  
-                    game.lives = 6
+                    game.lives = 10
                     set_shoot_timer(game.level)  
                     name_input_active = True
                     game.run = True  
@@ -252,9 +254,24 @@ while True:
                 game.mystery_ship_group.update()
                 game.check_for_collisions()
 
-        # Vẽ background game
-        screen.blit(game_background, (0, 0))
+                if len(game.aliens_group) == 0:
+                    game.victory()
+        if game.victory_active:
+            screen.fill((0, 0, 0))  # Đổ màu nền để che mọi thứ
+            victory_surface = menu_font.render("VICTORY", True, WHITE)
+            screen.blit(victory_surface, ((SCREEN_WIDTH + OFFSET - victory_surface.get_width()) // 2, SCREEN_HEIGHT // 2))
 
+            current_time = pygame.time.get_ticks()
+            if current_time - game.victory_time >= 2.5:  
+                game.reset()  
+                game.victory_active = False
+                game.run = False 
+                menu_active = True
+        else:
+        # Vẽ background game
+            screen.blit(game_background, (0, 0))
+
+        game.update()
         # Vẽ UI
         pygame.draw.rect(screen, YELLOW, (10, 10, 780, 780), 2, 0, 60, 60, 60, 60)
         pygame.draw.line(screen, YELLOW, (25, 730), (775, 730), 3)

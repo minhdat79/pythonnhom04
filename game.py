@@ -9,6 +9,8 @@ import math
 
 class Game:
     def __init__(self, screen_width, screen_height, offset):
+        self.victory_active = False
+        self.victory_time = 0
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.offset = offset
@@ -44,13 +46,24 @@ class Game:
 
         self.set_initial_lives()
 
+    def victory(self):
+        self.victory_active = True
+        self.victory_time = pygame.time.get_ticks()
+
+    def update(self):
+        if self.victory_active:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.victory_time >= 3000: 
+                self.reset()  
+                self.victory_active = False
+
     def set_initial_lives(self):
         """Thiết lập số mạng dựa trên level."""
         if self.level == 3:
-            self.lives = 6
+            self.lives = 10
         else:
             self.lives = 3    
-            
+
     def set_sound_volume(self, volume):
         """Điều chỉnh âm lượng hiệu ứng âm thanh."""
         self.explosion_sound.set_volume(volume)  
@@ -197,6 +210,8 @@ class Game:
 
                 if pygame.sprite.spritecollide(alien, self.spaceship_group, False):
                     self.game_over()
+        if not self.aliens_group:  
+            self.victory()
 
     def game_over(self):
         self.current_level = self.level  
