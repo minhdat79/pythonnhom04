@@ -162,6 +162,7 @@ while True:
                 # Chọn Level 1
                 if 300 <= mouse_pos[0] <= 450 and 300 <= mouse_pos[1] <= 370:
                     game.level = 1 
+                    game.lives = 3
                     set_shoot_timer(game.level)  
                     name_input_active = True
                     game.run = True 
@@ -169,12 +170,14 @@ while True:
                 # Chọn Level 2
                 elif 300 <= mouse_pos[0] <= 450 and 400 <= mouse_pos[1] <= 470:
                     game.level = 2  
+                    game.lives = 3
                     set_shoot_timer(game.level)  
                     name_input_active = True
                     game.run = True  
                     level_selection_active = False 
                 elif 300 <= mouse_pos[0] <= 450 and 500 <= mouse_pos[1] <= 570: 
                     game.level = 3  
+                    game.lives = 6
                     set_shoot_timer(game.level)  
                     name_input_active = True
                     game.run = True  

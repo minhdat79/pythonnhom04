@@ -42,6 +42,15 @@ class Game:
         pygame.mixer.music.load("Sounds/music.ogg")
         pygame.mixer.music.play(-1)
 
+        self.set_initial_lives()
+
+    def set_initial_lives(self):
+        """Thiết lập số mạng dựa trên level."""
+        if self.level == 3:
+            self.lives = 6
+        else:
+            self.lives = 3    
+            
     def set_sound_volume(self, volume):
         """Điều chỉnh âm lượng hiệu ứng âm thanh."""
         self.explosion_sound.set_volume(volume)  
@@ -195,7 +204,7 @@ class Game:
 
     def reset(self):
         self.run = True
-        self.lives = 3
+        self.lives = 6 if self.level == 3 else 3
         self.spaceship_group.sprite.reset()
         self.aliens_group.empty()
         self.alien_lasers_group.empty()
