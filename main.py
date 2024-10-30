@@ -17,6 +17,7 @@ menu_font = pygame.font.Font("Font/monogram.ttf", 150)
 title_font = pygame.font.Font("Font/monogram.ttf", 100)
 
 level_surface = font.render("LEVEL 01", False, YELLOW)
+level_surface_2 = font.render("LEVEL 02", False, YELLOW)
 game_over_surface = font.render("GAME OVER", False, YELLOW)
 screen_text_surface = font.render("SCORE", False, YELLOW)
 highscore_text_surface = font.render("HIGH SCORE", False, YELLOW)
@@ -31,14 +32,24 @@ game = Game(SCREEN_WIDTH, SCREEN_HEIGHT, OFFSET)
 
 # Event Timer
 SHOOT_LASER = pygame.USEREVENT
-pygame.time.set_timer(SHOOT_LASER, 300)
+
+# Thay đổi thời gian bắn đạn dựa trên cấp độ
+def set_shoot_timer(level):
+    if level == 1:
+        pygame.time.set_timer(SHOOT_LASER, 300)  
+    elif level == 2:
+        pygame.time.set_timer(SHOOT_LASER, 800)  
+
+set_shoot_timer(game.level)
 
 MYSTERYSHIP = pygame.USEREVENT + 1
 pygame.time.set_timer(MYSTERYSHIP, random.randint(4000, 8000))
 
 # Biến điều khiển Menu
-menu_active = True  # Trạng thái menu
-paused = False  # Trạng thái pause
+menu_active = True  
+level_selection_active = False  
+paused = False 
+name_input_active = False
 
 # Tải background cho menu và game
 menu_background = pygame.image.load("background.jpg").convert()
@@ -58,6 +69,7 @@ shoot_text = shoot_font.render("SPACE: Shoot", True, WHITE)
 pause_font = pygame.font.SysFont("Arial", 40)
 pause_text = shoot_font.render("ESC: Pause game", True, WHITE)
 
+
 # Vòng lặp chính
 while True:
     for event in pygame.event.get():
@@ -71,10 +83,33 @@ while True:
 
                 # Xử lý khi nhấn nút Play hoặc Quit
                 if 300 <= mouse_pos[0] <= 450 and 300 <= mouse_pos[1] <= 370:
-                    menu_active = False  # Vào game
+                    level_selection_active = True  # Vào menu chọn cấp độ
+                    menu_active = False  # Tắt menu chính
                 elif 300 <= mouse_pos[0] <= 450 and 400 <= mouse_pos[1] <= 470:
                     pygame.quit()
                     sys.exit()
+
+        elif level_selection_active:  # Xử lý chọn cấp độ
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                # Chọn Level 1
+                if 300 <= mouse_pos[0] <= 450 and 300 <= mouse_pos[1] <= 370:
+                    game.level = 1 
+                    set_shoot_timer(game.level)  
+                    name_input_active = True
+                    game.run = True 
+                    level_selection_active = False 
+                # Chọn Level 2
+                elif 300 <= mouse_pos[0] <= 450 and 400 <= mouse_pos[1] <= 470:
+                    game.level = 2  
+                    set_shoot_timer(game.level)  
+                    name_input_active = True
+                    game.run = True  
+                    level_selection_active = False 
+                # Quay lại menu chính
+                elif 300 <= mouse_pos[0] <= 450 and 600 <= mouse_pos[1] <= 670:
+                    menu_active = True
+                    level_selection_active = False
 
         elif event.type == SHOOT_LASER and game.run and not paused:
             game.alien_shoot_laser()
@@ -90,7 +125,7 @@ while True:
         # Xử lý nhấn ESC để tạm dừng
         if keys[pygame.K_ESCAPE] and game.run:
             paused = not paused  # Chuyển đổi trạng thái pause
-
+        
     # Hiển thị Menu
     if menu_active:
         screen.blit(menu_background, (0, 0))  # Vẽ background menu
@@ -108,6 +143,21 @@ while True:
         screen.blit(shoot_text, (20, SCREEN_HEIGHT + OFFSET - 60))
         screen.blit(pause_text, (20, SCREEN_HEIGHT + OFFSET - 10))
 
+    # Hiển thị Menu Chọn Cấp Độ
+    elif level_selection_active:
+        screen.blit(menu_background, (0, 0))  # Vẽ background menu chọn cấp độ
+
+        # Vẽ tiêu đề
+        title_surface = title_font.render("Select Level", True, YELLOW)
+        screen.blit(title_surface, ((SCREEN_WIDTH + OFFSET - title_surface.get_width()) // 2, 150))
+
+        # Vẽ nút chọn cấp độ
+        draw_button("Level 1", 300, 300, 150, 70)
+        draw_button("Level 2", 300, 400, 150, 70)  
+        unavailable_surface = font.render("Level 3 Coming Soon!", True, WHITE)
+        screen.blit(unavailable_surface, ((SCREEN_WIDTH + OFFSET - unavailable_surface.get_width()) // 2, 500))
+        draw_button("Back to Menu", 300, 600, 150, 70)
+     
     else:  # Vòng lặp game khi menu tắt
         if not paused:  # Chỉ cập nhật game khi không bị tạm dừng
             if game.run:
@@ -125,7 +175,10 @@ while True:
         pygame.draw.line(screen, YELLOW, (25, 730), (775, 730), 3)
 
         if game.run:
-            screen.blit(level_surface, (570, 740, 50, 50))
+            if game.level == 1:
+                screen.blit(level_surface, (570, 740, 50, 50))
+            elif game.level == 2:
+                screen.blit(level_surface_2, (570, 740, 50, 50))
         else:
             screen.blit(game_over_surface, (570, 740, 50, 50))
 
@@ -140,7 +193,7 @@ while True:
         screen.blit(score_surface, (50, 40, 50, 50))
 
         screen.blit(highscore_text_surface, (550, 15, 50, 50))
-        formatted_highscore = str(game.highscore).zfill(5)
+        formatted_highscore = str(game.highscores[game.level]).zfill(5)
         highscore_surface = font.render(formatted_highscore, False, YELLOW)
         screen.blit(highscore_surface, (625, 40, 50, 50))
 
@@ -149,7 +202,7 @@ while True:
 
         for obstacle in game.obstacles:
             obstacle.blocks_group.draw(screen)
-
+    
         game.aliens_group.draw(screen)
         game.alien_lasers_group.draw(screen)
         game.mystery_ship_group.draw(screen)
@@ -159,15 +212,14 @@ while True:
             pause_surface = menu_font.render("PAUSED", True, WHITE)
             screen.blit(pause_surface, ((SCREEN_WIDTH + OFFSET - pause_surface.get_width()) // 2, 150))
             # Kích thước và khoảng cách cho nút
-            button_width = 200  # Đặt chiều rộng mới cho nút
-            button_height = 70  # Chiều cao cho nút
-            button_spacing = 20  # Khoảng cách giữa các nút
+            button_width = 200  
+            button_height = 70 
+            button_spacing = 20  
 
             # Vẽ các nút với kích thước và khoảng cách mới
             draw_button("Resume", 300, 300, button_width, button_height)
             draw_button("Back to Menu", 300, 300 + button_height + button_spacing, button_width, button_height)
             draw_button("Quit", 300, 300 + 2 * (button_height + button_spacing), button_width, button_height)
-
 
             # Xử lý khi nhấn nút Resume hoặc Quit
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -176,10 +228,11 @@ while True:
                     paused = False  # Tiếp tục trò chơi
                 elif 300 <= mouse_pos[0] <= 450 and 400 <= mouse_pos[1] <= 470:
                     menu_active = True  # Quay về menu
+                    game.reset()
                     paused = False 
                 elif 300 <= mouse_pos[0] <= 450 and 500 <= mouse_pos[1] <= 570:
                     pygame.quit() # Thoát trò chơi
                     sys.exit()
 
-    pygame.display.update()
+    pygame.display.flip()
     clock.tick(60)
