@@ -257,7 +257,7 @@ while True:
                 if len(game.aliens_group) == 0:
                     game.victory()
         if game.victory_active:
-            screen.fill((0, 0, 0))  # Đổ màu nền để che mọi thứ
+            screen.fill((0, 0, 0))  
             victory_surface = menu_font.render("VICTORY", True, WHITE)
             screen.blit(victory_surface, ((SCREEN_WIDTH + OFFSET - victory_surface.get_width()) // 2, SCREEN_HEIGHT // 2))
 
