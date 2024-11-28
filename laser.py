@@ -19,7 +19,7 @@ class Laser(pygame.sprite.Sprite):
         if self.rect.y > self.screen_height + 15 or self.rect.y < 0:
             self.kill()
 
-    @classmethod
+    @classmethod    
     def create_quadrant_laser(cls, position, speed, screen_height, color=(243, 216, 63)):
         angles = [-15, 0, 15]  # Các góc bắn
         lasers = []
